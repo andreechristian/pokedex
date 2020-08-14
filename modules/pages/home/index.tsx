@@ -1,29 +1,52 @@
 import React from 'react'
-import { StatusBar } from 'expo-status-bar'
 import { View, VirtualizedList, ListRenderItemInfo } from 'react-native'
 
-import { ListComponent } from '../../components'
+import { ListComponent, LIST_HEIGHT, LoaderComponent } from '../../components'
 
 import Styles from './style'
+import { Type, Sizes } from '../../../app/constants'
+import { PokemonService } from '../../../app/services'
+import { hideAsync } from 'expo/build/launch/SplashScreen'
 
 
-type data = {
-	id: string,
-	title: string,
+type List = {
+	id: number,
+	name: string,
+	type: Type,
 }
 
-const DATA: data[] = Array(500).fill(undefined).map((u, i) => {
-	return {
-		id: Math.random().toString(12).substring(0),
-		title: `Item ${i + 1}`
-	}
-})
+type Props = {}
 
+type State = {
+	isLoading: boolean,
+	actives: number[],
+	activeIndex: number,
+	offset: number,
+	count: number,
+	total: number,
+	data: List[],
+	filter: Type | null,
+}
 
-export class HomePage extends React.Component {
+// const DATA: list[] = Array(500).fill(undefined).map((u, i) => {
+// 	return {
+// 		id: Math.random(),
+// 		title: `Item ${ i + 1 }`
+// 	}
+// })
 
-	state = {
-		actives: [] as string[],
+export class HomePage extends React.Component<Props, State> {
+
+	state: State = {
+		isLoading: false,
+		// actives: DATA.slice(0, Math.floor(Sizes.screen.height / LIST_HEIGHT)).map(d => d.id),
+		actives: [],
+		activeIndex: -1,
+		offset: 0,
+		count: 100,
+		total: Infinity,
+		data: [],
+		filter: null,
 	}
 
 	config = {
@@ -31,26 +54,96 @@ export class HomePage extends React.Component {
 		itemVisiblePercentThreshold: 10,
 	}
 
-	keyer = (item: data) => item.id
+	componentDidMount() {
+		this.getData()
+	}
 
-	getItemCount = (items: typeof DATA) => items.length
+	componentDidUpdate(nP: Props, nS: State) {
+		if (
+			nS.offset !== this.state.offset
+			|| nS.filter !== this.state.filter
+		) {
+			this.getData()
+		}
+	}
 
-	getItem = (items: typeof DATA, index: number) => items[index]
+	keyer = (item: List) => String(item.id)
 
-	onViewableChanged: React.ComponentProps<typeof VirtualizedList>['onViewableItemsChanged'] = viewable => {
+	getData = () => {
 		this.setState({
-			actives: viewable.viewableItems.map(i => i.key)
+			isLoading: true,
+		})
+
+		const {
+			offset,
+			count,
+			filter,
+		} = this.state
+
+		Promise.resolve().then(() => {
+			if (filter) {
+				return PokemonService.listByFilter(filter)
+			} else {
+				return PokemonService.listByOffset(offset, count)
+			}
+		}).then(result => {
+			this.setState({
+				data: [...this.state.data, ...result.data],
+				total: result.count,
+				actives: this.state.data.length ? this.state.actives : result.data.slice(0, Math.floor(Sizes.screen.height / LIST_HEIGHT)).map(d => d.id) ,
+				isLoading: false,
+			})
+		}).catch(err => {
+			// TODO: Display Notification
+
+			this.setState({
+				isLoading: false,
+			})
+		})
+
+	}
+
+	getItemCount = (items: List[]) => items.length
+
+	getItem = (items: List[], index: number) => items[index]
+
+	onSelect = (activeIndex: number) => {
+		this.setState({
+			activeIndex,
 		})
 	}
 
-	listRenderer = (list: ListRenderItemInfo<data>) => {
+	onViewableChanged: React.ComponentProps<typeof VirtualizedList>['onViewableItemsChanged'] = viewable => {
+		this.setState({
+			actives: viewable.viewableItems.map(i => i.item.id)
+		})
+	}
+
+	onEndReached = () => {
+		if (this.state.total > this.state.data.length && !this.state.isLoading) {
+			this.setState({
+				offset: this.state.data.length,
+			})
+		}
+	}
+
+	listRenderer = (data: ListRenderItemInfo<List>) => {
 		return (
 			<ListComponent
-				isActive={ this.state.actives.indexOf(list.item.id) > -1 }
-				title={ list.item.title }
+				id={ data.item.id }
+				title={ data.item.name }
+				active={ this.state.actives.indexOf(data.item.id) > -1 }
+				selected={ this.state.activeIndex === data.index}
+				onPress={ this.onSelect.bind(this, data.index) }
 				style={ Styles.item }
 			/>
 		)
+	}
+
+	loadingRenderer = () => {
+		return this.state.isLoading ? (
+			<LoaderComponent />
+		) : null
 	}
 
 	render() {
@@ -58,16 +151,18 @@ export class HomePage extends React.Component {
 			<View style={ Styles.container }>
 				{/* <Text>Open up App.tsx to start working on your app!</Text> */}
 				<VirtualizedList
-					data={ DATA }
-					initialNumToRender={ 4 }
-					renderItem={ this.listRenderer }
 					keyExtractor={ this.keyer }
+					data={ this.state.data }
+					extraData={ this.state.activeIndex }
+					viewabilityConfig={ this.config }
+					onEndReachedThreshold={ .5 }
 					getItemCount={ this.getItemCount }
 					getItem={ this.getItem }
-					viewabilityConfig={ this.config }
 					onViewableItemsChanged={ this.onViewableChanged }
+					onEndReached={ this.onEndReached }
+					renderItem={ this.listRenderer }
+					ListFooterComponent={ this.loadingRenderer }
 				/>
-				<StatusBar style="auto" />
 			</View>
 		)
 	}

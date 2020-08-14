@@ -23,7 +23,7 @@ export namespace PokemonService {
 	}> {
 		return Promise.resolve().then(() => {
 			return ServiceStore.load(`offset/${ offset }/count${ count }`)
-		}).catch(async () => {
+		}).catch(async err => {
 			return fetch(`${ Defaults.BASE_URL }pokemon?limit=${ count }&offset=${ offset }`)
 				.then(res => res.json())
 				.then(async res => {
@@ -31,10 +31,11 @@ export namespace PokemonService {
 						count: res.count,
 						data: await Promise.all(res.results.map(async (result: any) => {
 							const id = CommonHelper.idFromUrl(result.url)
+							const pokemon = await PokemonStore.load(id).catch(() => null)
 							return {
 								id,
 								name: result.name,
-								type: (await PokemonStore.load(id)).types.pop(),
+								type: pokemon ? pokemon.types.pop() : null,
 							}
 						}))
 					})
@@ -42,20 +43,26 @@ export namespace PokemonService {
 		})
 	}
 
-	export async function listByFilter(type: Type): Promise<Result[]> {
+	export async function listByFilter(type: Type): Promise<{
+		count: number,
+		data: Result[],
+	}> {
 		return Promise.resolve().then(() => {
 			return ServiceStore.load(`type/${ type }`)
 		}).catch(async () => {
 			return fetch(`${ Defaults.BASE_URL }type/${ type }`)
 				.then(res => res.json())
 				.then(res => {
-					return ServiceStore.save(`type/${ type }`, res.pokemon.map((pokemon: any) => {
-						return {
-							id: CommonHelper.idFromUrl(pokemon.pokemon.url),
-							name: pokemon.pokemon.name,
-							type,
-						}
-					}))
+					return ServiceStore.save(`type/${ type }`, {
+						count: res.pokemon.length,
+						data: res.pokemon.map((pokemon: any) => {
+							return {
+								id: CommonHelper.idFromUrl(pokemon.pokemon.url),
+								name: pokemon.pokemon.name,
+								type,
+							}
+						})
+					})
 				})
 		})
 	}
