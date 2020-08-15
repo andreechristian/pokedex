@@ -26,20 +26,28 @@ export namespace PokemonService {
 		}).catch(async err => {
 			return fetch(`${ Defaults.BASE_URL }pokemon?limit=${ count }&offset=${ offset }`)
 				.then(res => res.json())
-				.then(async res => {
+				.then(res => {
 					return ServiceStore.save(`offset/${ offset }/count${ count }`, {
 						count: res.count,
-						data: await Promise.all(res.results.map(async (result: any) => {
-							const id = CommonHelper.idFromUrl(result.url)
-							const pokemon = await PokemonStore.load(id).catch(() => null)
+						data: res.results.map((result: any) => {
 							return {
-								id,
+								id: CommonHelper.idFromUrl(result.url),
 								name: result.name,
-								type: pokemon ? pokemon.types.pop() : null,
 							}
-						}))
+						})
 					})
 				})
+		}).then(async res => {
+			return {
+				count: res.count,
+				data: await Promise.all(res.data.map(async (result: any) => {
+					const pokemon = await PokemonStore.load(result.id).catch(() => null)
+					return {
+						...result,
+						type: pokemon ? pokemon.types[0] : null,
+					}
+				}))
+			}
 		})
 	}
 

@@ -7,4 +7,8 @@ export namespace CommonHelper {
 		return parseInt(parts.pop() as string, 10)
 	}
 
+	export function capitalize(chars: string): string {
+		return chars.charAt(0).toUpperCase() + chars.slice(1)
+	}
+
 }

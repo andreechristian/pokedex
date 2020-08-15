@@ -4,7 +4,7 @@ import { ActivityIndicator } from 'react-native'
 import { Colors } from '../../../app/constants'
 
 
-export const LoaderComponent = (props: {
+export const LoaderBit = (props: {
 	color?: string
 	style?: object
 }) => {

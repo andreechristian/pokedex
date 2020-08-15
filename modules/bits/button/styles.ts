@@ -5,17 +5,21 @@ export default StyleSheet.create({
 
 	button: {
 		backgroundColor: Colors.opacity(Colors.blue, .9),
-		height: 50,
-		justifyContent: 'center',
 		padding: Sizes.margin.default,
 	},
 
 	title: {
 		fontSize: 21,
+		lineHeight: 28,
+		fontFamily: 'OpenSans-extrabold',
 	},
 
 	disabled: {
 		backgroundColor: Colors.opacity(Colors.blue, .3),
+	},
+
+	prefix: {
+		marginLeft: Sizes.margin.half,
 	},
 
 })

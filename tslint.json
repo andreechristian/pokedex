@@ -9,7 +9,15 @@
 			true,
 			"never"
 		],
-		"no-namespace": false
+		"no-namespace": false,
+		"variable-name": {
+			"options": [
+				"ban-keywords",
+				"check-format",
+				"allow-leading-underscore",
+				"allow-pascal-case"
+			]
+		}
 	},
     "rulesDirectory": []
 }

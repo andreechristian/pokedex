@@ -6,7 +6,7 @@ import { Asset } from 'expo-asset'
 import { FontAwesome } from '@expo/vector-icons'
 import { Image, View, Text, TouchableOpacity } from 'react-native'
 
-import { ButtonComponent } from '../../components'
+import { ButtonBit } from '../../bits'
 
 import Styles from './style'
 
@@ -24,12 +24,54 @@ type State = {
 }
 
 const ASSETS = [
-	'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png',
-	// require('./assets/images/circle.jpg'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/bug.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/dark.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/dragon.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/electric.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/fairy.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/fighting.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/fire.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/flying.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/ghost.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/grass.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/ground.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/ice.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/normal.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/poison.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/psychic.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/rock.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/steel.png'),
+	// tslint:disable-next-line: no-var-requires
+	require('../../../assets/icons/water.png'),
 ]
 
 const FONTS = [
 	FontAwesome.font,
+	{
+		'OpenSans-light': require('../../../assets/fonts/OpenSans-Light.ttf'),
+		'OpenSans-regular': require('../../../assets/fonts/OpenSans-Regular.ttf'),
+		'OpenSans-italic': require('../../../assets/fonts/OpenSans-Italic.ttf'),
+		'OpenSans-semibold': require('../../../assets/fonts/OpenSans-SemiBold.ttf'),
+		'OpenSans-bold': require('../../../assets/fonts/OpenSans-SemiBold.ttf'),
+		'OpenSans-extrabold': require('../../../assets/fonts/OpenSans-ExtraBold.ttf'),
+	},
 	// { 'name' : 'source' }
 ]
 
@@ -85,7 +127,7 @@ export class PreloaderPage extends React.Component<Props, State> {
 		return this.state.error ? (
 			<View style={ Styles.container }>
 				<Text>Oops… failed to load data</Text>
-				<ButtonComponent title="retry" onPress={ this.onRetry } style={ Styles.button } />
+				<ButtonBit title="retry" onPress={ this.onRetry } style={ Styles.button } />
 			</View>
 		) : (
 			<AppLoading key={ this.state.retry }
